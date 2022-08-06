@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Wordle Helper</title>
+<meta name="author" content="Vivian Easley">
+<meta name="description" content="Helps you solve wordle by giving you hints to possible words and letter pairings.">
+<meta charset="UTF-8" />
+<style>
+  input {
+    font-size: 18px;
+    padding: 2px 4px
+  }
+
+  .letter {
+    width: 10px;
+  }
+
+  .wrapper {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <h1>Wordle Helper</h1>
+  <div>Absent letters: <input class="absent-letters" type="text"></div><br />
+  <div>Present letters: <input class="present-letters" type="text"></div><br />
+  <div>
+    Known letters:
+    <div>
+      <input class="letter" type="text">
+      <input class="letter" type="text">
+      <input class="letter" type="text">
+      <input class="letter" type="text">
+      <input class="letter" type="text">
+    </div>
+  </div><br />
+  <div><button>Update</button></div><br />
+  <hr />
+  <div>
+    <h2>Words to try:</h2>
+    <div class="to-try"></div>
+  </div>
+  <div>
+    <h2>Maybe words:</h2>
+   <div class="fallback"></div>
+  </div>
+  <div>
+     <h2>Possible bi-pairs:</h2>
+    <div class="bi-pairs"></div>
+  </div>
+</div>
+
+
+<script>
+const toTryNode = document.querySelector('.to-try');
+const biPairsNode = document.querySelector('.bi-pairs');
+const fallbackNode = document.querySelector('.fallback');
+const updateNode = document.querySelector('button');
+
+let absent = [];
+let present = [];
+let letters = [];
+
+let baseBiPairs = ["th", "he", "in", "er", "an", "re", "on", "at", "en", "nd", "ti", "es", "or", "te", "of", "ed", "is", "it", "al", "ar", "st", "to", "nt", "ng", "se", "ha", "as", "ou", "io", "le", "ve", "co", "me", "de", "hi", "ri", "ro", "ic", "ne", "ea", "ra", "ce", "li", "ch", "ll", "be", "ma", "si", "om", "ur"];
+
+let baseStarters = ["airts", "aisle", "alert", "alist", "aloes", "alter", "altos", "ariel", "arils", "arise", "arles", "arose", "artel", "aster", "astir", "earls", "iotas", "irate", "islet", "istle", "lairs", "lares", "laris", "laser", "later", "lears", "least", "liars", "liers", "liras", "lirot", "litas", "liter", "lites", "litre", "lores", "loris", "loser", "lotas", "lotsa", "oater", "oiler", "orals", "orate", "oriel", "orles", "osier", "ostia", "rails", "raise", "rales", "ratel", "rates", "ratio", "ratos", "reals", "relit", "reoil", "resat", "resit", "retia", "rials", "riels", "riles", "riots", "rites", "roast", "roils", "roles", "roset", "rosti", "rotas", "rotes", "rotis", "rotls", "serai", "seral", "setal", "sitar", "slate", "slier", "solar", "solei", "sorel", "sorta", "stair", "stale", "stare", "steal", "stela", "stile", "stoae", "stoai", "stole", "store", "stria", "taels", "tails", "taler", "tales", "tares", "taros", "tarsi", "taser", "teals", "tears", "telia", "teloi", "telos", "terai", "tesla", "tiers", "tiler", "tiles", "tires", "tirls", "tiros", "toeas", "toile", "toils", "tolar", "tolas", "toles", "toras", "tores", "torse", "torsi", "trail", "trial", "tries", "triol", "trios", "trois", 'aloft', 'clear', 'guilt', 'intro', 'opens', 'prone', 'slime', 'stain', 'tread', 'under', 'swipe', 'point', 'adore', 'duels', 'trial', 'lifts', 'urban', 'ruled', 'soily', 'foamy', 'react', 'adieu', 'later', 'sired', 'tears', 'alone', 'arise', 'about', 'atone', 'irate', 'snare', 'cream', 'paint', 'worse', 'sauce', 'anime', 'prowl', 'roast', 'drape', 'media', 'ouija', 'frame', 'graze', 'windy', 'paint', 'gourd', 'swing', 'vapes', 'audio', 'farts', 'ready', 'pears', 'chief', 'touch', 'roast', 'tears', 'meats', 'ouija', 'pizza', 'arise', 'poets', 'early', 'steam', 'boils', 'spout', 'count', 'wound', 'steak'];
+
+let baseFallbackWords = ["about","alert","argue","beach","above","alike","arise","began","abuse","alive","array","begin","actor","allow","aside","begun","acute","alone","asset","being","admit","along","audio","below","adopt","alter","audit","bench","adult","among","avoid","billy","after","anger","award","birth","again","angle","aware","black","agent","angry","badly","blame","agree","apart","baker","blind","ahead","apple","bases","block","alarm","apply","basic","blood","album","arena","basis","board","boost","buyer","china","cover","booth","cable","chose","craft","bound","calif","civil","crash","brain","carry","claim","cream","brand","catch","class","crime","bread","cause","clean","cross","break","chain","clear","crowd","breed","chair","click","crown","brief","chart","clock","curve","bring","chase","close","cycle","broad","cheap","coach","daily","broke","check","coast","dance","brown","chest","could","dated","build","chief","count","dealt","built","child","court","death","debut","entry","forth","group","delay","equal","forty","grown","depth","error","forum","guard","doing","event","found","guess","doubt","every","frame","guest","dozen","exact","frank","guide","draft","exist","fraud","happy","drama","extra","fresh","harry","drawn","faith","front","heart","dream","false","fruit","heavy","dress","fault","fully","hence","drill","fiber","funny","henry","drink","field","giant","horse","drive","fifth","given","hotel","drove","fifty","glass","house","dying","fight","globe","human","eager","final","going","ideal","early","first","grace","image","earth","fixed","grade","index","eight","flash","grand","inner","elite","fleet","grant","input","empty","floor","grass","issue","enemy","fluid","great","irony","enjoy","focus","green","juice","enter","force","gross","joint","jones","links","media","newly","judge","lives","metal","night","known","local","might","noise","label","logic","minor","north","large","loose","minus","noted","laser","lower","mixed","novel","later","lucky","model","nurse","laugh","lunch","money","occur","layer","lying","month","ocean","learn","magic","moral","offer","lease","major","motor","often","least","maker","mount","order","leave","march","mouse","other","legal","maria","mouth","ought","level","match","movie","paint","lewis","maybe","music","panel","light","mayor","needs","paper","limit","meant","never","party","peace","power","radio","round","peter","press","raise","route","phase","price","range","royal","phone","pride","rapid","rural","photo","prime","ratio","scale","piece","print","reach","scene","pilot","prior","ready","scope","pitch","prize","refer","score","place","proof","right","sense","plain","proud","rival","serve","plane","prove","river","seven","plant","queen","robin","shall","plate","quick","roger","shape","point","quiet","roman","share","pound","quite","rough","sharp","sheet","spare","style","times","shelf","speak","sugar","tired","shell","speed","suite","title","shift","spend","super","today","shirt","spent","sweet","topic","shock","split","table","total","shoot","spoke","taken","touch","short","sport","taste","tough","shown","staff","taxes","tower","sight","stage","teach","track","since","stake","teeth","trade","sixth","stand","terry","train","sixty","start","texas","treat","sized","state","thank","trend","skill","steam","theft","trial","sleep","steel","their","tried","slide","stick","theme","tries","small","still","there","truck","smart","stock","these","truly","smile","stone","thick","trust","smith","stood","thing","truth","smoke","store","think","twice","solid","storm","third","under","solve","story","those","undue","sorry","strip","three","union","sound","stuck","threw","unity","south","study","throw","until","space","stuff","tight","upper","upset","whole","waste","wound","urban","whose","watch","write","usage","woman","water","wrong","usual","women","wheel","wrote","valid","world","where","yield","value","worry","which","young","video","worse","while","youth","virus","worst","white","worth","visit","would","vital","voice","alien"]
+
+biPairs = [...baseBiPairs];
+fallbackWords = [...baseFallbackWords];
+starters = [...baseStarters];
+
+window.addEventListener('load', () => {
+    setValues()
+    addAllText()
+});
+
+updateNode.addEventListener('click', () => {
+    biPairs = [...baseBiPairs];
+    fallbackWords = [...baseFallbackWords];
+    starters = [...baseStarters];
+
+    setValues()
+
+    removeAbsent(biPairs, absent, true);
+    removeAbsent(fallbackWords, absent, true);
+    removeAbsent(starters, absent, true);
+
+
+    removeAbsent(biPairs, present);
+    removeAbsent(fallbackWords, present);
+    removeAbsent(starters, present);
+
+    knownRemoval(fallbackWords);
+    knownRemoval(starters);
+    addAllText()
+}, false)
+
+function setValues() {
+    absent = document.querySelector('.absent-letters').value.split("");
+    present = document.querySelector('.present-letters').value.split("");
+    letterNodes = document.querySelectorAll('.letter');
+    letters = Array.from(letterNodes).map((node) => node.value ? node.value : undefined)
+}
+
+function addAllText() {
+    // filter null values
+    const startersFiltered = starters.filter(e => e !== undefined);
+    const startersText = startersFiltered.join(', ');
+    toTryNode.textContent = startersText;
+
+    const biPairsFiltered = biPairs.filter(e => e !== undefined);
+    const biPairsText = biPairsFiltered.join(', ');
+    biPairsNode.textContent = biPairsText;
+
+    const fallbackFiltered = fallbackWords.filter(e => e !== undefined);
+    const fallbackText = fallbackFiltered.join(', ');
+    fallbackNode.textContent = fallbackText;
+}
+
+
+
+function removeAbsent(arr1, arr2, isAbsent) {
+    for (let arr2Index = 0; arr2Index < arr2.length; arr2Index++) {
+        for (let arr1Index = 0; arr1Index < arr1.length; arr1Index++) {
+            if (arr1[arr1Index] && arr2[arr2Index]) {
+                if (arr1[arr1Index] && arr1[arr1Index].includes(arr2[arr2Index]) && isAbsent) {
+                    arr1.splice(arr1Index, 1, undefined)
+                }
+                if (arr1[arr1Index] && arr1[arr1Index].includes(arr2[arr2Index]) === false && !isAbsent) {
+                    arr1.splice(arr1Index, 1, undefined)
+                }
+            }
+        }
+    }
+}
+
+function knownRemoval(wordsArr) {
+    for (let knownIndex = 0; knownIndex < letters.length; knownIndex++) {
+        if (letters[knownIndex]) {
+            for (let wordsIndex = 0; wordsIndex < wordsArr.length; wordsIndex++) {
+                if (wordsArr[wordsIndex] && wordsArr[wordsIndex].charAt(knownIndex) !== letters[knownIndex]) {
+                  wordsArr.splice(wordsIndex, 1, undefined)
+                }
+            }
+        }
+    }
+}
+</script>
+</body>
+</html>
+
